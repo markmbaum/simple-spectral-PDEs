@@ -1,7 +1,7 @@
 using DrWatson
 @quickactivate "Chaotic NPDE"
 push!(LOAD_PATH, srcdir())
-using ChaoticNPDE
+using PDE1D
 
 using BenchmarkTools
 using ProfileView

@@ -101,12 +101,6 @@ version = "1.0.1"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[deps.BasicInterpolators]]
-deps = ["LinearAlgebra", "Memoize", "Random"]
-git-tree-sha1 = "56e59d20a2dfafdfe681c372ed67200efa43ad88"
-uuid = "26cce99e-4866-4b6d-ab74-862489e035e0"
-version = "0.6.5"
-
 [[deps.BenchmarkTools]]
 deps = ["JSON", "Logging", "Printf", "Profile", "Statistics", "UUIDs"]
 git-tree-sha1 = "4c10eee4af024676200bc7752e536f858c6b8f93"
@@ -129,18 +123,6 @@ version = "1.0.8+0"
 git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.4.2"
-
-[[deps.CFITSIO]]
-deps = ["CFITSIO_jll"]
-git-tree-sha1 = "8425c47db102577eefb93cb37b4480e750116b0d"
-uuid = "3b1b4be9-1499-4b22-8d78-7db3344d1961"
-version = "1.4.1"
-
-[[deps.CFITSIO_jll]]
-deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "9c91a9358de42043c3101e3a29e60883345b0b39"
-uuid = "b3e40c51-02ae-5482-8a39-3ace5868dcf4"
-version = "4.0.0+0"
 
 [[deps.CPUSummary]]
 deps = ["CpuId", "IfElse", "Static"]
@@ -637,12 +619,6 @@ git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
 
-[[deps.Healpix]]
-deps = ["CFITSIO", "LazyArtifacts", "Libsharp", "LinearAlgebra", "Pkg", "Printf", "RecipesBase", "StaticArrays", "Test"]
-git-tree-sha1 = "e4583be5e3fc6436d3eb00f163c799cb46712aa6"
-uuid = "9f4e344d-96bc-545a-84a3-ae6b9e1b672b"
-version = "4.0.1"
-
 [[deps.HostCPUFeatures]]
 deps = ["BitTwiddlingConvenienceFunctions", "IfElse", "Libdl", "Static"]
 git-tree-sha1 = "b7b88a4716ac33fe31d6556c02fc60017594343c"
@@ -914,12 +890,6 @@ git-tree-sha1 = "25d5e6b4eb3558613ace1c67d6a871420bfca527"
 uuid = "925c91fb-5dd6-59dd-8e8c-345e74382d89"
 version = "2.52.4+0"
 
-[[deps.Libsharp]]
-deps = ["Libdl", "libsharp2_jll"]
-git-tree-sha1 = "e09051a3f95b83091fc9b7a26e6c585c6691b5bc"
-uuid = "ac8d63fe-4615-43ae-9860-9cd4a3820532"
-version = "0.2.0"
-
 [[deps.Libtiff_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "Pkg", "Zlib_jll", "Zstd_jll"]
 git-tree-sha1 = "3eb79b0ca5764d4799c06699573fd8f533259713"
@@ -1019,12 +989,6 @@ version = "0.4.3"
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-
-[[deps.Memoize]]
-deps = ["MacroTools"]
-git-tree-sha1 = "2b1dfcba103de714d31c033b5dacc2e4a12c7caa"
-uuid = "c03570c3-d221-55d1-a50c-7939bbd78826"
-version = "0.4.4"
 
 [[deps.MeshIO]]
 deps = ["ColorTypes", "FileIO", "GeometryBasics", "Printf"]
@@ -1885,12 +1849,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
 git-tree-sha1 = "94d180a6d2b5e55e447e2d27a29ed04fe79eb30c"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
 version = "1.6.38+0"
-
-[[deps.libsharp2_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "9a7b8663b021ba776c89d9de7cdb2069cc27c00a"
-uuid = "180207a7-b08e-5162-af94-7d62a04fe081"
-version = "1.0.2+1"
 
 [[deps.libsixel_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]

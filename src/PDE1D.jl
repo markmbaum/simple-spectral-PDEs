@@ -1,12 +1,9 @@
-module NPDE
+module PDE1D
 
 using FFTW
-using FastSphericalHarmonics
 using UnPack
 
-import Base.show
-
-export evaluate_derivatives!, ∂u!
+export evaluate_terms!, ∂u!
 
 #------------------------------------------------------------------------------
 # general
@@ -54,16 +51,82 @@ function gridpoints(N::Int, 𝒯=Float64)
     return x
 end
 
-function randominit(model::PDE1D{𝒯}) where {𝒯}
-    @unpack F, N, Pᵢ = model
-    #load random values into F
-    F[1] = 0im
-    for n ∈ 2:9
-        F[n] = randn(Complex{𝒯})/(n-1)
+function randominit(model::PDE1D{𝒯}, nmax::Int=8) where {𝒯}
+    @unpack N, Pᵢ = model
+    #load random values into a spectral vector
+    @assert nmax + 1 ≤ N
+    y = zeros(Complex{𝒯}, N)
+    for n ∈ 2:nmax+1
+        y[n] = randn(Complex{𝒯})/exp2(√n)
     end
-    #take the ifft
-    Pᵢ * F
-    return F .|> real
+    #take the ifft and return reals
+    Pᵢ * y
+    return y .|> real
+end
+
+#------------------------------------------------------------------------------
+# simple advection-diffusion Equation
+
+export AdvectionDiffusion
+
+struct AdvectionDiffusion{𝒯, 𝒰, 𝒱, 𝒲} <: PDE1D{𝒯, 𝒰, 𝒱}
+    x::Vector{𝒯}
+    F::Vector{Complex{𝒯}}
+    ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
+    uₓ::Vector{𝒯}
+    uₓₓ::Vector{𝒯}
+    D::𝒯
+    N::Int64
+    P::𝒰 #fft plan
+    Pᵢ::𝒱 #ifft plan
+    𝓋::𝒲 #velocity function 𝓋(x,t)
+end
+
+function Base.show(io::IO, model::AdvectionDiffusion{𝒯}) where {𝒯}
+    println(io, "$(model.N) point AdvectionDiffusion{$𝒯}")
+end
+
+AdvectionDiffusion(𝓋::Real; kw...) = AdvectionDiffusion((x,t) -> 𝓋; kw...)
+
+function AdvectionDiffusion(𝓋::Function; D=0.0, N::Int=128, 𝒯::Type=Float64) # 𝓋(x,t)
+    checksetup(N, 𝒯)
+    x = gridpoints(N, 𝒯)
+    F = zeros(Complex{𝒯}, N)
+    ∂ = zeros(Complex{𝒯}, N)
+    uₓ = zeros(𝒯, N)
+    uₓₓ = zeros(𝒯, N)
+    P = plan_fft!(F, flags=FFTW.PATIENT)
+    Pᵢ = plan_ifft!(F, flags=FFTW.PATIENT)
+    AdvectionDiffusion(x, F, ∂, uₓ, uₓₓ, convert(𝒯,D), N, P, Pᵢ, 𝓋)
+end
+
+function evaluate_terms!(model::AdvectionDiffusion{𝒯}, u::AbstractVector{𝒯}) where {𝒯}
+    #unpack model arrays
+    @unpack F, ∂, uₓ, uₓₓ, N, P, Pᵢ = model
+    #check length
+    @assert length(u) == N
+    #copy u values into F for in-place DFT
+    copyto!(F, u)
+    #take the DFT in-place
+    P * F
+    #shuffle over for taking derivatives
+    copyto!(∂, F)
+    #first derivative
+    fourier_derivative!(uₓ, ∂, F, Pᵢ, 1)
+    #second derivative
+    fourier_derivative!(uₓₓ, ∂, F, Pᵢ, 1)
+    return nothing
+end
+
+advection(x, t, uₓ, uₓₓ, D, 𝓋::ℱ) where ℱ = -𝓋(x,t)*uₓ + D*uₓₓ
+
+function ∂u!(∂u, u, model::AdvectionDiffusion, t)::Nothing
+    @unpack x, uₓ, uₓₓ, D, 𝓋 = model
+    evaluate_terms!(model, u)
+    @inbounds for i ∈ eachindex(∂u)
+        ∂u[i] = advection.(x[i], t, uₓ[i], uₓₓ[i], D, 𝓋)
+    end
+    nothing
 end
 
 #------------------------------------------------------------------------------
@@ -97,7 +160,7 @@ function KortewegDeVries(; a=0.1, N::Int=128, 𝒯::Type=Float64)
     KortewegDeVries(convert(𝒯, a), F, ∂, uₓ, uₓₓₓ, N, P, Pᵢ)
 end
 
-function evaluate_derivatives!(model::KortewegDeVries{𝒯}, u::AbstractVector{𝒯}) where {𝒯}
+function evaluate_terms!(model::KortewegDeVries{𝒯}, u::AbstractVector{𝒯}) where {𝒯}
     #unpack model arrays
     @unpack F, ∂, uₓ, uₓₓₓ, N, P, Pᵢ = model
     #check length
@@ -119,7 +182,7 @@ korteweg_de_vries(u, uₓ, uₓₓₓ, a) = -u*uₓ - a*a*uₓₓₓ
 
 function ∂u!(∂u, u, model::KortewegDeVries, t)::Nothing
     @unpack uₓ, uₓₓₓ, a = model
-    evaluate_derivatives!(model, u)
+    evaluate_terms!(model, u)
     ∂u .= korteweg_de_vries.(u, uₓ, uₓₓₓ, a)
     nothing
 end
@@ -145,7 +208,7 @@ function Base.show(io::IO, model::KuramotoSivashinsky{𝒯}) where {𝒯}
     println(io, "$(model.N) point KuramotoSivashinsky{$𝒯} with L=$(model.L)")
 end
 
-function KuramotoSivashinsky(; L=1.0, N::Int=128, 𝒯::Type=Float64)
+function KuramotoSivashinsky(; L=5.0, N::Int=128, 𝒯::Type=Float64)
     checksetup(N, 𝒯)
     F = zeros(Complex{𝒯}, N)
     ∂ = zeros(Complex{𝒯}, N)
@@ -157,7 +220,7 @@ function KuramotoSivashinsky(; L=1.0, N::Int=128, 𝒯::Type=Float64)
     KuramotoSivashinsky(convert(𝒯, L), F, ∂, uₓ, uₓₓ, uₓₓₓₓ, N, P, Pᵢ)
 end
 
-function evaluate_derivatives!(model::KuramotoSivashinsky{𝒯}, u::AbstractVector{𝒯}) where {𝒯}
+function evaluate_terms!(model::KuramotoSivashinsky{𝒯}, u::AbstractVector{𝒯}) where {𝒯}
     #unpack model arrays
     @unpack L, F, ∂, uₓ, uₓₓ, uₓₓₓₓ, N, P, Pᵢ = model
     #check length
@@ -185,25 +248,9 @@ kuramoto_sivashinsky(u, uₓ, uₓₓ, uₓₓₓₓ) = -(uₓₓ + uₓₓₓ�
 
 function ∂u!(∂u, u, model::KuramotoSivashinsky, t)::Nothing
     @unpack uₓ, uₓₓ, uₓₓₓₓ = model
-    evaluate_derivatives!(model, u)
+    evaluate_terms!(model, u)
     ∂u .= kuramoto_sivashinsky.(u, uₓ, uₓₓ, uₓₓₓₓ)
     nothing
 end
-
-#------------------------------------------------------------------------------
-# the 2D Barotropic Vorticity equation on the sphere
-
-#struct BarotropicVorticity{𝒯, 𝒰, 𝒱, 𝒲}
-#    Ω::𝒯
-#    Ζ::Matrix{𝒯}
-#    ζ::Matrix{𝒯}
-#    U::Matrix{𝒯}
-#    u::Matrix{𝒯}
-#    V::Matrix{𝒯}
-#    v::Matrix{𝒯}
-#    ∂ζu::Matrix{𝒯}
-#    ∂ ζ::Matrix{𝒯}
-#    ζₛ
-#end
 
 end
