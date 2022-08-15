@@ -3,7 +3,6 @@ using DrWatson
 push!(LOAD_PATH, srcdir())
 using PDE1D
 
-using OrdinaryDiffEq
 using GLMakie
 
 ##
@@ -15,11 +14,7 @@ tspan = [0, 100];
 
 ##
 
-sol = solve(
-    ODEProblem(∂u!, u₀, tspan, model),
-    QNDF(autodiff=false),
-    reltol=1e-6
-);
+sol = integrate(model, u₀, tspan);
 
 ##
 

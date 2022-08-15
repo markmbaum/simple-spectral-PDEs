@@ -1,31 +1,29 @@
 using DrWatson
-@quickactivate "NPDE"
+@quickactivate "PDE1D"
 push!(LOAD_PATH, srcdir())
 using PDE1D
 
-using OrdinaryDiffEq
-using PyPlot
+##
 
+using PyPlot
 pygui(true)
 
 ##
 
-model = AdvectionDiffusion((x,t) -> 2 + cos(x), D=0.01)
+model = KortewegDeVries()
 x = gridpoints(model.N)
 u₀ = 1e2*randominit(model)
-tspan = [0, 25]
-
-prob = ODEProblem(∂u!, u₀, tspan, model);
+tspan = [0, 10]
 
 ##
 
-sol = solve(prob, FBDF(autodiff=false), reltol=1e-6)
+sol = integrate(model, u₀, tspan)
 
 figure(constrained_layout=true)
 t = LinRange(tspan[1], tspan[end], 101)
 lim = sol .|> abs |> maximum
 r = pcolormesh(
-    x/(2π),
+    x,
     t, 
     sol.(t),
     cmap="RdBu",

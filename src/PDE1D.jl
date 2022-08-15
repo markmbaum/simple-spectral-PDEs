@@ -2,6 +2,7 @@ module PDE1D
 
 using FFTW
 using UnPack
+using OrdinaryDiffEq
 
 export evaluate_terms!, ∂u!
 
@@ -9,8 +10,6 @@ export evaluate_terms!, ∂u!
 # general
 
 export fourier_derivative!, gridpoints, randominit
-
-abstract type PDE1D{𝒯<:AbstractFloat, 𝒰, 𝒱} end
 
 function fourier_derivative!(F::Vector{𝒯})::Nothing where {𝒯<:Complex}
     N = length(F)
@@ -51,13 +50,14 @@ function gridpoints(N::Int, 𝒯=Float64)
     return x
 end
 
-function randominit(model::PDE1D{𝒯}, nmax::Int=8) where {𝒯}
+function randominit(model::𝒯, nmax::Int=8) where {𝒯}
     @unpack N, Pᵢ = model
+    𝒰 = fieldtype(𝒯, 1) |> eltype
     #load random values into a spectral vector
     @assert nmax + 1 ≤ N
-    y = zeros(Complex{𝒯}, N)
+    y = zeros(Complex{𝒰}, N)
     for n ∈ 2:nmax+1
-        y[n] = randn(Complex{𝒯})/exp2(√n)
+        y[n] = randn(Complex{𝒰})/exp2(√n)
     end
     #take the ifft and return reals
     Pᵢ * y
@@ -69,7 +69,7 @@ end
 
 export AdvectionDiffusion
 
-struct AdvectionDiffusion{𝒯, 𝒰, 𝒱, 𝒲} <: PDE1D{𝒯, 𝒰, 𝒱}
+struct AdvectionDiffusion{𝒯, 𝒰, 𝒱, 𝒲}
     x::Vector{𝒯}
     F::Vector{Complex{𝒯}}
     ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
@@ -134,7 +134,7 @@ end
 
 export KortewegDeVries
 
-struct KortewegDeVries{𝒯, 𝒰, 𝒱} <: PDE1D{𝒯, 𝒰, 𝒱}
+struct KortewegDeVries{𝒯, 𝒰, 𝒱}
     a::𝒯
     F::Vector{Complex{𝒯}}
     ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
@@ -192,7 +192,7 @@ end
 
 export KuramotoSivashinsky
 
-struct KuramotoSivashinsky{𝒯, 𝒰, 𝒱} <: PDE1D{𝒯, 𝒰, 𝒱}
+struct KuramotoSivashinsky{𝒯, 𝒰, 𝒱}
     L::𝒯
     F::Vector{Complex{𝒯}}
     ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
@@ -251,6 +251,19 @@ function ∂u!(∂u, u, model::KuramotoSivashinsky, t)::Nothing
     evaluate_terms!(model, u)
     ∂u .= kuramoto_sivashinsky.(u, uₓ, uₓₓ, uₓₓₓₓ)
     nothing
+end
+
+#------------------------------------------------------------------------------
+# integration
+
+export integrate
+
+function integrate(model, u₀, tspan; tol=1e-6)
+    solve(
+        ODEProblem(∂u!, u₀, tspan, model),
+        FBDF(autodiff=false),
+        reltol=tol
+    )
 end
 
 end

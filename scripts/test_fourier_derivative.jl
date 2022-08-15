@@ -1,7 +1,9 @@
 using DrWatson
-@quickactivate "Chaotic NPDE"
+@quickactivate "PDE1D"
 push!(LOAD_PATH, srcdir())
 using PDE1D
+
+##
 
 using BenchmarkTools
 using ProfileView
@@ -74,12 +76,3 @@ P = FFTW.plan_fft!(F, flags=FFTW.PATIENT)
 end;
 
 ##
-
-kdv = KortewegDeVries(N=128)
-x = gridpoints(kdv.N)
-u = sin.(x)
-ProfileView.@profview begin
-    for i in 1:1_000_000
-        evaluate_derivatives!(kdv, u)
-    end
-end
