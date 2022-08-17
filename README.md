@@ -7,7 +7,7 @@ This small repository implements pseudospectral solvers for a few one-dimensiona
 
 $$ u_t = -v(x,t)u_x + D u_{xx} $$
 
-where $v(x,t)$ is a velocity function that can be any periodic function of space and time and $D$ is a diffusion coefficient. The example below shows a solution from a random initial condition on a 512 point grid with $v(x,t)=1.25 + \cos(x + 2\pi/25)$ and $D=10^{-4}$. The diffusion acts mostly in the central low-velocity zone where the ripples are compressed and $u_{xx}$ is highest.
+where $v(x,t)$ is a velocity function that can be any periodic function of space and time and $D$ is a diffusion coefficient. The example below shows a solution from a random initial condition on a 512 point grid with $v(x,t)=1.25 + \cos(x + 2 \pi t/25)$ and $D=10^{-4}$. The diffusion acts mostly in the migrating low-velocity zone where the ripples are compressed and $u_{xx}$ is highest.
 
 ![advection_diffusion](mov/advection_diffusion.gif)
 
