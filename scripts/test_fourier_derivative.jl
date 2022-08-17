@@ -1,7 +1,7 @@
 using DrWatson
-@quickactivate "PDE1D"
+@quickactivate "Simple Spectral PDEs"
 push!(LOAD_PATH, srcdir())
-using PDE1D
+using SimpleSpectralPDEs
 
 ##
 

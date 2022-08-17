@@ -1,4 +1,4 @@
-name = "PDE1D"
+name = "Simple Spectral PDEs"
 authors = ["Mark Baum <markmbaum@protonmail.com>"]
 
 [deps]
