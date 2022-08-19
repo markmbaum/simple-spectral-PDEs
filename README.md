@@ -15,7 +15,7 @@ where $v(x,t)$ is a velocity function that can be any periodic function of space
 
 $$ u_t = -u u_x - a^2u_{xxx} $$
 
-This is a simplified shallow water wave model with a lot of nonlinearity and a third-order derivative.
+This is a simplified shallow water wave model with a third-order derivative and rippling, ghostly solutions.
 
 ![korteweg_de_vries](mov/korteweg_de_vries.gif)
 

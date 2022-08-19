@@ -120,13 +120,13 @@ function evaluate_terms!(model::AdvectionDiffusion{𝒯}, u::AbstractVector{𝒯
     return nothing
 end
 
-advection(x, t, uₓ, uₓₓ, D, 𝓋::ℱ) where ℱ = -𝓋(x,t)*uₓ + D*uₓₓ
+advection_diffusion(x, t, uₓ, uₓₓ, D, 𝓋::ℱ) where ℱ = -𝓋(x,t)*uₓ + D*uₓₓ
 
 function ∂u!(∂u, u, model::AdvectionDiffusion, t)::Nothing
     @unpack x, uₓ, uₓₓ, D, 𝓋 = model
     evaluate_terms!(model, u)
     @inbounds for i ∈ eachindex(∂u)
-        ∂u[i] = advection.(x[i], t, uₓ[i], uₓₓ[i], D, 𝓋)
+        ∂u[i] = advection_diffusion.(x[i], t, uₓ[i], uₓₓ[i], D, 𝓋)
     end
     nothing
 end
