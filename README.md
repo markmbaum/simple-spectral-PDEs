@@ -1,7 +1,11 @@
 
 # Simple Spectral PDEs
 
-This small repository implements pseudospectral solvers for a few one-dimensional partial differential equations (PDEs) in periodic domains. In each case, the solver uses in-place fast Fourier transforms and time-steppers from [OrdinaryDiffEq.jl](https://diffeq.sciml.ai/stable/solvers/ode_solve/) for fast, high-accuracy, and stable solutions. The density of the grid can be any power of two. The three PDEs equations implemented are, in order of solutions with increasing complexity:
+This small repository implements pseudospectral solvers for a few one-dimensional partial differential equations (PDEs) in periodic domains. In each case, the solver uses in-place fast Fourier transforms and time-steppers from [OrdinaryDiffEq.jl](https://diffeq.sciml.ai/stable/solvers/ode_solve/) for fast, high-accuracy, and stable solutions. The density of the grid can be any power of two.
+
+Look at the short [testing script](scripts/test_integration.jl) for an example of how to integrate a model.
+
+The three PDEs equations implemented are briefly described below, in order of increasing complexity. A different equation could be implemented pretty easily by following the same pattern in the [module](src/SimpleSpectralPDEs.jl).
 
 ### Advection-Diffusion
 
@@ -26,6 +30,7 @@ $$ u_t = -u_{xx} - u_{xxxx} - u u_{x} $$
 A fourth-order PDE famous for its chaotic behavior. The model produces different behavior for different domain length, which causes the terms above to have different scaling.
 
 ![kuramoto_sivashinsky](mov/kuramoto_sivashinsky.gif)
+
 
 --------
 
