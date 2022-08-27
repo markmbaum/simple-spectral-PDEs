@@ -10,10 +10,10 @@ pygui(true)
 
 ##
 
-model = KortewegDeVries()
+model = KortewegDeVries(N=256)
 x = gridpoints(model.N)
 u₀ = 1e2*randominit(model)
-tspan = [0, 10]
+tspan = [0, 1]
 
 ##
 
