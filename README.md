@@ -1,7 +1,7 @@
 
 # Simple Spectral PDEs
 
-This small repository implements pseudospectral solvers for a few one-dimensional partial differential equations (PDEs) in periodic domains. In each case, the solver uses in-place fast Fourier transforms and time-steppers from [OrdinaryDiffEq.jl](https://diffeq.sciml.ai/stable/solvers/ode_solve/) for fast, high-accuracy, and stable solutions. The density of the grid can be any power of two.
+This small repository implements pseudospectral solvers for a few one-dimensional partial differential equations (PDEs) in periodic domains. In each case, the solver uses in-place Fourier transforms (FFTW) and time-steppers from [OrdinaryDiffEq.jl](https://diffeq.sciml.ai/stable/solvers/ode_solve/) for fast, high-accuracy, and stable solutions. The density of the grid can be any power of two.
 
 Look at the short [testing script](scripts/test_integration.jl) for an example of how to integrate a model.
 

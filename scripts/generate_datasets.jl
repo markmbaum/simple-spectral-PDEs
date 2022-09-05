@@ -11,12 +11,12 @@ pygui(true)
 
 ##
 
-function generate_dataset(model, tspan, fnout)
+function generate_dataset(model, tspan, nt, fnout)
 
     u₀ = 1e2*randominit(model)
     sol = integrate(model, u₀, tspan)
 
-    t = LinRange(tspan[1], tspan[end], 10000)
+    t = LinRange(tspan[1], tspan[end], nt)
     x = gridpoints(model.N)
     u = zeros(Float32, length(x), length(t))
     for i ∈ eachindex(t)
@@ -42,10 +42,10 @@ function generate_dataset(model, tspan, fnout)
     
     figure(constrained_layout=true)
     lim = u .|> abs |> maximum
-    r = pcolormesh(x[1:3:end], t[1:3:end], u[1:3:end,1:3:end]', cmap="RdBu", vmin=-lim, vmax=lim, shading="gouraud")
+    r = pcolormesh(x[1:2:end], t[1:4:end], u[1:2:end,1:4:end]', cmap="RdBu", vmin=-lim, vmax=lim, shading="gouraud")
     xlabel("x")
     ylabel("t")
-    cb = colorbar()
+    colorbar()
 
     return nothing
 end
@@ -53,23 +53,26 @@ end
 ##
 
 generate_dataset(
-    AdvectionDiffusion((x,t) -> 1.25 + cos(x), D=0, N=256),
-    [0, 20],
+    AdvectionDiffusion((x,t) -> 1.25 + cos(x), D=0, N=128),
+    [0, 50],
+    5_000,
     datadir("sims", "advection.nc")
 )
 
 ##
 
 generate_dataset(
-    KortewegDeVries(N=256),
-    [0, 30],
+    KortewegDeVries(N=128, D=1e-8),
+    [0, 200],
+    20_000,
     datadir("sims", "korteweg_de_vries.nc")
 )
 
 ##
 
 generate_dataset(
-    KuramotoSivashinsky(N=256, L=10),
-    [0, 2000],
+    KuramotoSivashinsky(N=128, L=10),
+    [0, 5000],
+    500_000,
     datadir("sims", "kuramoto_sivashinsky.nc")
 )

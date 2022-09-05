@@ -10,10 +10,10 @@ pygui(true)
 
 ##
 
-model = KortewegDeVries(N=256)
+model = KortewegDeVries(N=128, D=1e-5)
 x = gridpoints(model.N)
 u₀ = 1e2*randominit(model)
-tspan = [0, 1]
+tspan = [0, 30];
 
 ##
 
@@ -35,6 +35,8 @@ xlabel("x")
 ylabel("t")
 cb = colorbar()
 #cb.set_label("u", rotation=0);
+
+##
 
 figure()
 t = LinRange(tspan[1], tspan[end], 20)

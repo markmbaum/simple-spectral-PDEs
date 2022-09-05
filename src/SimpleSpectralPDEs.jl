@@ -141,7 +141,9 @@ struct KortewegDeVries{𝒯, 𝒰, 𝒱}
     F::Vector{Complex{𝒯}}
     ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
     uₓ::Vector{𝒯}
+    uₓₓ::Vector{𝒯}
     uₓₓₓ::Vector{𝒯}
+    D::𝒯
     N::Int64
     P::𝒰 #fft plan
     Pᵢ::𝒱 #ifft plan
@@ -151,20 +153,21 @@ function Base.show(io::IO, model::KortewegDeVries{𝒯}) where {𝒯}
     println(io, "$(model.N) point KortewegDeVries{$𝒯} with a=$(model.a)")
 end
 
-function KortewegDeVries(; a=0.1, N::Int=128, 𝒯::Type=Float64)
+function KortewegDeVries(; a=0.1, N::Int=128, D::Real=0., 𝒯::Type=Float64)
     checksetup(N, 𝒯)
     F = zeros(Complex{𝒯}, N)
     ∂ = zeros(Complex{𝒯}, N)
     uₓ = zeros(𝒯, N)
+    uₓₓ = zeros(𝒯, N)
     uₓₓₓ = zeros(𝒯, N)
     P = plan_fft!(F, flags=FFTW.PATIENT)
     Pᵢ = plan_ifft!(F, flags=FFTW.PATIENT)
-    KortewegDeVries(convert(𝒯, a), F, ∂, uₓ, uₓₓₓ, N, P, Pᵢ)
+    KortewegDeVries(convert(𝒯, a), F, ∂, uₓ, uₓₓ, uₓₓₓ, convert(𝒯, D), N, P, Pᵢ)
 end
 
 function evaluate_terms!(model::KortewegDeVries{𝒯}, u::AbstractVector{𝒯}) where {𝒯}
     #unpack model arrays
-    @unpack F, ∂, uₓ, uₓₓₓ, N, P, Pᵢ = model
+    @unpack F, ∂, uₓ, uₓₓ, uₓₓₓ, D, N, P, Pᵢ = model
     #check length
     @assert length(u) == N
     #copy u values into F for in-place DFT
@@ -175,17 +178,24 @@ function evaluate_terms!(model::KortewegDeVries{𝒯}, u::AbstractVector{𝒯}) 
     copyto!(∂, F)
     #first derivative
     fourier_derivative!(uₓ, ∂, F, Pᵢ, 1)
-    #third derivative
-    fourier_derivative!(uₓₓₓ, ∂, F, Pᵢ, 2)
+    if D != zero(𝒯)
+        #second derivative
+        fourier_derivative!(uₓₓ, ∂, F, Pᵢ, 1)
+        #third derivative
+        fourier_derivative!(uₓₓₓ, ∂, F, Pᵢ, 1)
+    else
+        #third derivative
+        fourier_derivative!(uₓₓₓ, ∂, F, Pᵢ, 2)
+    end
     return nothing
 end
 
-korteweg_de_vries(u, uₓ, uₓₓₓ, a) = -u*uₓ - a*a*uₓₓₓ
+korteweg_de_vries(u, uₓ, uₓₓₓ, a, uₓₓ, D) = -u*uₓ - a*a*uₓₓₓ + D*uₓₓ
 
 function ∂u!(∂u, u, model::KortewegDeVries, t)::Nothing
-    @unpack uₓ, uₓₓₓ, a = model
+    @unpack uₓ, uₓₓ, uₓₓₓ, a, D = model
     evaluate_terms!(model, u)
-    ∂u .= korteweg_de_vries.(u, uₓ, uₓₓₓ, a)
+    ∂u .= korteweg_de_vries.(u, uₓ, uₓₓₓ, a, uₓₓ, D)
     nothing
 end
 
@@ -261,7 +271,7 @@ end
 export integrate
 
 #convenience/barrier
-function integrate(model, u₀, tspan; method::Symbol=:FBDF, tol=1e-6)
+function integrate(model, u₀, tspan; method::Symbol=:QNDF, tol=1e-9)
     integrate(model, u₀, tspan, method |> eval, tol)
 end
 
