@@ -5,7 +5,7 @@ This small repository implements pseudospectral solvers for a few one-dimensiona
 
 Look at the short [testing script](scripts/test_integration.jl) for an example of how to integrate a model.
 
-The three PDEs equations implemented are briefly described below, in order of increasing complexity. A different equation could be implemented pretty easily by following the same pattern in the [module](src/SimpleSpectralPDEs.jl).
+The three equations implemented are briefly described below, in order of increasing complexity. A different equation could be implemented pretty easily by following the same pattern in the [module](src/SimpleSpectralPDEs.jl).
 
 ### Advection-Diffusion
 
