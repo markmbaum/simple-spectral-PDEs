@@ -15,10 +15,10 @@ function fourier_derivative!(F::Vector{𝒯})::Nothing where {𝒯<:Complex}
     N = length(F)
     @assert ispow2(N)
     @inbounds for k ∈ 1:N÷2
-        F[k] *= im*(k-1)
+        F[k] *= im * (k - 1)
     end
     @inbounds for k ∈ N÷2+1:N
-        F[k] *= im*(k-1-N)
+        F[k] *= im * (k - 1 - N)
     end
     nothing
 end
@@ -45,7 +45,7 @@ function checksetup(N, 𝒯)::Nothing
 end
 
 function gridpoints(N::Int, 𝒯=Float64)
-    x = LinRange(0, 2π, N+1)[1:end-1]
+    x = LinRange(0, 2π, N + 1)[1:end-1]
     x = collect(𝒯, x)
     return x
 end
@@ -57,7 +57,7 @@ function randominit(model::𝒯, nmax::Int=8) where {𝒯}
     @assert nmax + 1 ≤ N
     y = zeros(Complex{𝒰}, N)
     for n ∈ 2:nmax+1
-        y[n] = randn(Complex{𝒰})/exp2(√n)
+        y[n] = randn(Complex{𝒰}) / exp2(√n)
     end
     #take the ifft and return reals
     Pᵢ * y
@@ -69,7 +69,7 @@ end
 
 export AdvectionDiffusion
 
-struct AdvectionDiffusion{𝒯, 𝒰, 𝒱, 𝒲}
+struct AdvectionDiffusion{𝒯,𝒰,𝒱,𝒲}
     x::Vector{𝒯}
     F::Vector{Complex{𝒯}}
     ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
@@ -86,9 +86,9 @@ function Base.show(io::IO, model::AdvectionDiffusion{𝒯}) where {𝒯}
     println(io, "$(model.N) point AdvectionDiffusion{$𝒯}")
 end
 
-AdvectionDiffusion(; kw...) = AdvectionDiffusion((x,t) -> 1.0; kw...)
+AdvectionDiffusion(; kw...) = AdvectionDiffusion((x, t) -> 1.0; kw...)
 
-AdvectionDiffusion(𝓋::Real; kw...) = AdvectionDiffusion((x,t) -> 𝓋; kw...)
+AdvectionDiffusion(𝓋::Real; kw...) = AdvectionDiffusion((x, t) -> 𝓋; kw...)
 
 function AdvectionDiffusion(𝓋::Function; D=0.0, N::Int=128, 𝒯::Type=Float64) # 𝓋(x,t)
     checksetup(N, 𝒯)
@@ -99,7 +99,7 @@ function AdvectionDiffusion(𝓋::Function; D=0.0, N::Int=128, 𝒯::Type=Float6
     uₓₓ = zeros(𝒯, N)
     P = plan_fft!(F, flags=FFTW.PATIENT)
     Pᵢ = plan_ifft!(F, flags=FFTW.PATIENT)
-    AdvectionDiffusion(x, F, ∂, uₓ, uₓₓ, convert(𝒯,D), N, P, Pᵢ, 𝓋)
+    AdvectionDiffusion(x, F, ∂, uₓ, uₓₓ, convert(𝒯, D), N, P, Pᵢ, 𝓋)
 end
 
 function evaluate_terms!(model::AdvectionDiffusion{𝒯}, u::AbstractVector{𝒯}) where {𝒯}
@@ -120,7 +120,7 @@ function evaluate_terms!(model::AdvectionDiffusion{𝒯}, u::AbstractVector{𝒯
     return nothing
 end
 
-advection_diffusion(x, t, uₓ, uₓₓ, D, 𝓋::ℱ) where ℱ = -𝓋(x,t)*uₓ + D*uₓₓ
+advection_diffusion(x, t, uₓ, uₓₓ, D, 𝓋::ℱ) where {ℱ} = -𝓋(x, t) * uₓ + D * uₓₓ
 
 function ∂u!(∂u, u, model::AdvectionDiffusion, t)::Nothing
     @unpack x, uₓ, uₓₓ, D, 𝓋 = model
@@ -136,7 +136,7 @@ end
 
 export KortewegDeVries
 
-struct KortewegDeVries{𝒯, 𝒰, 𝒱}
+struct KortewegDeVries{𝒯,𝒰,𝒱}
     a::𝒯
     F::Vector{Complex{𝒯}}
     ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
@@ -153,7 +153,7 @@ function Base.show(io::IO, model::KortewegDeVries{𝒯}) where {𝒯}
     println(io, "$(model.N) point KortewegDeVries{$𝒯} with a=$(model.a)")
 end
 
-function KortewegDeVries(; a=0.1, N::Int=128, D::Real=0., 𝒯::Type=Float64)
+function KortewegDeVries(; a=0.1, N::Int=128, D::Real=0.0, 𝒯::Type=Float64)
     checksetup(N, 𝒯)
     F = zeros(Complex{𝒯}, N)
     ∂ = zeros(Complex{𝒯}, N)
@@ -190,7 +190,7 @@ function evaluate_terms!(model::KortewegDeVries{𝒯}, u::AbstractVector{𝒯}) 
     return nothing
 end
 
-korteweg_de_vries(u, uₓ, uₓₓₓ, a, uₓₓ, D) = -u*uₓ - a*a*uₓₓₓ + D*uₓₓ
+korteweg_de_vries(u, uₓ, uₓₓₓ, a, uₓₓ, D) = -u * uₓ - a * a * uₓₓₓ + D * uₓₓ
 
 function ∂u!(∂u, u, model::KortewegDeVries, t)::Nothing
     @unpack uₓ, uₓₓ, uₓₓₓ, a, D = model
@@ -204,7 +204,7 @@ end
 
 export KuramotoSivashinsky
 
-struct KuramotoSivashinsky{𝒯, 𝒰, 𝒱}
+struct KuramotoSivashinsky{𝒯,𝒰,𝒱}
     L::𝒯
     F::Vector{Complex{𝒯}}
     ∂::Vector{Complex{𝒯}} #staging vector for fourier derivatives
@@ -256,7 +256,7 @@ function evaluate_terms!(model::KuramotoSivashinsky{𝒯}, u::AbstractVector{�
     return nothing
 end
 
-kuramoto_sivashinsky(u, uₓ, uₓₓ, uₓₓₓₓ) = -(uₓₓ + uₓₓₓₓ + u*uₓ)
+kuramoto_sivashinsky(u, uₓ, uₓₓ, uₓₓₓₓ) = -(uₓₓ + uₓₓₓₓ + u * uₓ)
 
 function ∂u!(∂u, u, model::KuramotoSivashinsky, t)::Nothing
     @unpack uₓ, uₓₓ, uₓₓₓₓ = model

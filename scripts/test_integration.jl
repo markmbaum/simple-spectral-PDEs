@@ -1,6 +1,5 @@
-using DrWatson
-@quickactivate "Simple Spectral PDEs"
-push!(LOAD_PATH, srcdir())
+using Pkg
+Pkg.activate(@__DIR__)
 using SimpleSpectralPDEs
 
 ##
@@ -12,7 +11,7 @@ pygui(true)
 
 model = KortewegDeVries(N=128, D=1e-5)
 x = gridpoints(model.N)
-u₀ = 1e2*randominit(model)
+u₀ = 1e2 * randominit(model)
 tspan = [0, 30];
 
 ##
@@ -24,7 +23,7 @@ t = LinRange(tspan[1], tspan[end], 101)
 lim = sol .|> abs |> maximum
 r = pcolormesh(
     x,
-    t, 
+    t,
     sol.(t),
     cmap="RdBu",
     vmin=-lim,
