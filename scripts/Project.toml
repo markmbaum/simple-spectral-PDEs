@@ -1,0 +1,7 @@
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+NetCDF = "30363a11-5582-574a-97bb-aa9a979735b9"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+SimpleSpectralPDEs = "b072df2f-9f06-4032-8a49-9c16aeabc807"

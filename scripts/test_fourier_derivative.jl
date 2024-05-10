@@ -1,6 +1,5 @@
-using DrWatson
-@quickactivate "Simple Spectral PDEs"
-push!(LOAD_PATH, srcdir())
+using Pkg
+Pkg.activate(@__DIR__)
 using SimpleSpectralPDEs
 
 ##
@@ -15,20 +14,21 @@ pygui(true)
 ##
 
 f(x) = exp(-cos(x))
-f′(x) = sin(x)*f(x)
-f′′(x) = (sin(x)^2 + cos(x))*f(x)
+f′(x) = sin(x) * f(x)
+f′′(x) = (sin(x)^2 + cos(x)) * f(x)
 
 ##
 
 N = 4
 while N <= 512
+    global N
 
     x = gridpoints(N)
     y = f.(x)
-    
+
     y′ = zeros(N)
     y′′ = zeros(N)
-    
+
     F = zeros(ComplexF64, N)
     ∂ = zeros(ComplexF64, N)
     P = plan_fft!(F)
@@ -38,14 +38,14 @@ while N <= 512
     P * F
     copyto!(∂, F)
     fourier_derivative!(y′, ∂, F, Pᵢ, 1)
-    L₂′ = sum((y′ .- f′.(x)).^2)/N |> sqrt
+    L₂′ = sum((y′ .- f′.(x)) .^ 2) / N |> sqrt
 
     copyto!(F, y)
     P * F
     copyto!(∂, F)
     fourier_derivative!(y′′, ∂, F, Pᵢ, 2)
-    L₂′′ = sum((y′′ .- f′′.(x)).^2)/N |> sqrt    
-    
+    L₂′′ = sum((y′′ .- f′′.(x)) .^ 2) / N |> sqrt
+
     println("$N $L₂′ $L₂′′")
 
     N *= 2
@@ -62,7 +62,7 @@ F .= y
 ##
 
 @btime begin
-    copyto!($F, $y) 
+    copyto!($F, $y)
     fft!($F)
 end;
 
@@ -70,8 +70,8 @@ end;
 
 P = FFTW.plan_fft!(F, flags=FFTW.PATIENT)
 
-@btime begin 
-    copyto!($F, $y) 
+@btime begin
+    copyto!($F, $y)
     $P * $F
 end;
 
